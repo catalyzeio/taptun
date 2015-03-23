@@ -1,4 +1,4 @@
-package waterutil
+package pktutil
 
 import (
 	"net"

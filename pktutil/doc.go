@@ -1,5 +1,5 @@
 /*
-Package waterutil provides utility functions for interpreting TUN/TAP MAC farme headers and IP packet headers. It defines some constants such as protocol numbers and ethernet frame types. Use waterutil along with package water to work with TUN/TAP interface data.
+Package pktutil provides utility functions for interpreting TUN/TAP MAC frame headers and IP packet headers. It defines some constants such as protocol numbers and ethernet frame types. Use pktutil along with package taptun to work with TUN/TAP interface data.
 
 Frames/packets are interpreted in following format (as in TUN/TAP devices):
 
@@ -8,10 +8,10 @@ TAP - MAC Frame:
   +-----------------------------------------------------------------------------
   | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
   +-----------------------------------------------------------------------------
-  | Field | MAC Destination |   MAC  Source   |EType| Payload        
+  | Field | MAC Destination |   MAC  Source   |EType| Payload
   +-----------------------------------------------------------------------------
 
-   Single-Tagged -- Octets [12,13] == {0x81, 0x00} 
+   Single-Tagged -- Octets [12,13] == {0x81, 0x00}
   +-----------------------------------------------------------------------------
   | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
   +-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ TAP - MAC Frame:
   +-----------------------------------------------------------------------------
   | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
   +-----------------------------------------------------------------------------
-  | Field | MAC Destination |   MAC  Source   | Outer Tag | Inner Tag | Payload        
+  | Field | MAC Destination |   MAC  Source   | Outer Tag | Inner Tag | Payload
   +-----------------------------------------------------------------------------
 
 TUN - IPv4 Packet:
@@ -48,4 +48,4 @@ TUN - IPv4 Packet:
   +---------------------------------------------------------------------------------------------------------------+
 
 */
-package waterutil
+package pktutil
