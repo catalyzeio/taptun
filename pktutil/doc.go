@@ -1,9 +1,9 @@
 /*
-Package pktutil provides utility functions for interpreting TUN/TAP MAC frame headers and IP packet headers. It defines some constants such as protocol numbers and ethernet frame types. Use pktutil along with package taptun to work with TUN/TAP interface data.
+Package pktutil provides utility functions for interpreting raw MAC frame headers and IP packet headers. It defines some constants such as protocol numbers and ethernet frame types.
 
-Frames/packets are interpreted in following format (as in TUN/TAP devices):
+Frames/packets are interpreted in following format:
 
-TAP - MAC Frame:
+Ethernet Frame:
    No Tagging
   +-----------------------------------------------------------------------------
   | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
@@ -11,21 +11,21 @@ TAP - MAC Frame:
   | Field | MAC Destination |   MAC  Source   |EType| Payload
   +-----------------------------------------------------------------------------
 
-   Single-Tagged -- Octets [12,13] == {0x81, 0x00}
+   Single-Tagged 802.1q -- Octets [12,13] == {0x81, 0x00}
   +-----------------------------------------------------------------------------
-  | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
+  | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...g
   +-----------------------------------------------------------------------------
   | Field | MAC Destination |   MAC  Source   |    Tag    | Payload
   +-----------------------------------------------------------------------------
 
-   Double-Tagged -- Octets [12,13] == {0x88, 0xA8}
+   Double-Tagged 802.1q -- Octets [12,13] == {0x88, 0xA8} - FIXME: {0x91, 0x00}?
   +-----------------------------------------------------------------------------
   | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
   +-----------------------------------------------------------------------------
   | Field | MAC Destination |   MAC  Source   | Outer Tag | Inner Tag | Payload
   +-----------------------------------------------------------------------------
 
-TUN - IPv4 Packet:
+IPv4 Packet:
   +---------------------------------------------------------------------------------------------------------------+
   |       | Octet |           0           |           1           |           2           |           3           |
   | Octet |  Bit  |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|

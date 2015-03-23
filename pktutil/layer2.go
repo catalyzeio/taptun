@@ -43,6 +43,7 @@ func IsBroadcast(addr net.HardwareAddr) bool {
 	return addr[0] == 0xff && addr[1] == 0xff && addr[2] == 0xff && addr[3] == 0xff && addr[4] == 0xff && addr[5] == 0xff
 }
 
+// FIXME IPv4 in layer 2?
 func IsIPv4Multicast(addr net.HardwareAddr) bool {
 	return addr[0] == 0x01 && addr[1] == 0x00 && addr[2] == 0x5e
 }
