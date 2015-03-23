@@ -39,11 +39,14 @@ func MACPayload(macFrame []byte) []byte {
 	return macFrame[12+MACTagging(macFrame)+2:]
 }
 
-func IsBroadcast(addr net.HardwareAddr) bool {
+func IsMACBroadcast(addr net.HardwareAddr) bool {
 	return addr[0] == 0xff && addr[1] == 0xff && addr[2] == 0xff && addr[3] == 0xff && addr[4] == 0xff && addr[5] == 0xff
 }
 
-// FIXME IPv4 in layer 2?
-func IsIPv4Multicast(addr net.HardwareAddr) bool {
+func IsMACMulticastIPv4(addr net.HardwareAddr) bool {
 	return addr[0] == 0x01 && addr[1] == 0x00 && addr[2] == 0x5e
+}
+
+func IsMACMulticastIPv6(addr net.HardwareAddr) bool {
+	return addr[0] == 0x33 && addr[1] == 0x33
 }
