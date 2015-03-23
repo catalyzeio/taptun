@@ -1,5 +1,6 @@
 /*
-Package pktutil provides utility functions for interpreting raw MAC frame headers and IP packet headers. It defines some constants such as protocol numbers and ethernet frame types.
+Package pktutil provides utility functions for interpreting raw MAC frame headers and IP packet headers.
+It defines some constants such as protocol numbers and ethernet frame types.
 
 Frames/packets are interpreted in following format:
 
@@ -13,17 +14,17 @@ Ethernet Frame:
 
    Single-Tagged 802.1q -- Octets [12,13] == {0x81, 0x00}
   +-----------------------------------------------------------------------------
-  | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...g
+  | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
   +-----------------------------------------------------------------------------
-  | Field | MAC Destination |   MAC  Source   |    Tag    | Payload
+  | Field | MAC Destination |   MAC  Source   |    Tag    |EType| Payload
   +-----------------------------------------------------------------------------
 
    Double-Tagged 802.1q -- Octets [12,13] == {0x88, 0xA8} - FIXME: {0x91, 0x00}?
-  +-----------------------------------------------------------------------------
-  | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|...
-  +-----------------------------------------------------------------------------
-  | Field | MAC Destination |   MAC  Source   | Outer Tag | Inner Tag | Payload
-  +-----------------------------------------------------------------------------
+  +------------------------------------------------------------------------------------
+  | Octet |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|...
+  +------------------------------------------------------------------------------------
+  | Field | MAC Destination |   MAC  Source   | Outer Tag | Inner Tag |EType| Payload
+  +------------------------------------------------------------------------------------
 
 IPv4 Packet:
   +---------------------------------------------------------------------------------------------------------------+
