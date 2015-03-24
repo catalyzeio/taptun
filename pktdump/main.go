@@ -45,6 +45,10 @@ func main() {
 		payload := pktutil.MACPayload(pkt.Data)
 		if pktutil.IsIPv4(payload) {
 			fmt.Printf("Layer 3 - IPv4\n")
+			fmt.Printf("    Src  IP: %s\n", pktutil.IPv4Source(payload))
+			fmt.Printf("    Dest IP: %s\n", pktutil.IPv4Destination(payload))
+			data := pktutil.IPv4Payload(payload)
+			fmt.Printf("Data\n    %x\n", data)
 		} else {
 			fmt.Printf("Payload\n    %x\n", payload)
 		}
