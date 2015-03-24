@@ -6,7 +6,8 @@ import (
 
 type Tagging int
 
-// Indicating whether/how a MAC frame is tagged. The value is number of bytes taken by tagging.
+// Indicating whether/how a MAC frame is tagged.
+// The value is number of bytes taken by tagging.
 const (
 	NotTagged    Tagging = 0
 	Tagged       Tagging = 4
@@ -22,11 +23,26 @@ func MACSource(macFrame []byte) net.HardwareAddr {
 }
 
 func MACTagging(macFrame []byte) Tagging {
-	if macFrame[12] == 0x81 && macFrame[13] == 0x00 {
+	b1, b2 := macFrame[12], macFrame[13]
+	// check for TPID in ethertype position
+	if b1 == 0x81 && b2 == 0x00 {
+		b3, b4 := macFrame[16], macFrame[17]
+		if b3 == 0x81 && b4 == 0x00 {
+			// literal Q-in-Q tagging
+			return DoubleTagged
+		}
+		// normal 802.1q tagging
 		return Tagged
-	} else if macFrame[12] == 0x88 && macFrame[13] == 0xa8 {
+	}
+	// older Q-in-Q (non-standard) ethertype values
+	if (b1 == 0x91 || b1 == 0x92) && b2 == 0x00 {
 		return DoubleTagged
 	}
+	// newer 802.1ad ethertype value
+	if b1 == 0x88 && b2 == 0xA8 {
+		return DoubleTagged
+	}
+	// no 802.1q tagging
 	return NotTagged
 }
 
@@ -40,11 +56,11 @@ func MACPayload(macFrame []byte) []byte {
 }
 
 func IsMACBroadcast(addr net.HardwareAddr) bool {
-	return addr[0] == 0xff && addr[1] == 0xff && addr[2] == 0xff && addr[3] == 0xff && addr[4] == 0xff && addr[5] == 0xff
+	return addr[0] == 0xFF && addr[1] == 0xFF && addr[2] == 0xFF && addr[3] == 0xFF && addr[4] == 0xFF && addr[5] == 0xFF
 }
 
 func IsMACMulticastIPv4(addr net.HardwareAddr) bool {
-	return addr[0] == 0x01 && addr[1] == 0x00 && addr[2] == 0x5e
+	return addr[0] == 0x01 && addr[1] == 0x00 && addr[2] == 0x5E
 }
 
 func IsMACMulticastIPv6(addr net.HardwareAddr) bool {
