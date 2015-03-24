@@ -43,19 +43,24 @@ func NewTUN(ifName string) (ifce *Interface, err error) {
 	return
 }
 
-// Returns true if ifce is a TUN interface, otherwise returns false;
+// Returns true if ifce is a TUN interface; otherwise returns false.
 func (ifce *Interface) IsTUN() bool {
 	return !ifce.isTAP
 }
 
-// Returns true if ifce is a TAP interface, otherwise returns false;
+// Returns true if ifce is a TAP interface; otherwise returns false.
 func (ifce *Interface) IsTAP() bool {
 	return ifce.isTAP
 }
 
-// Returns the interface name of ifce, e.g. tun0, tap1, etc..
+// Returns the interface name of ifce, e.g. tun0, tap1, etc.
 func (ifce *Interface) Name() string {
 	return ifce.name
+}
+
+// Closes the TUN/TAP interface.
+func (ifce *Interface) Close() error {
+	return ifce.file.Close()
 }
 
 // Implement io.Writer interface.
