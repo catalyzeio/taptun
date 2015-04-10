@@ -3,6 +3,7 @@
 package taptun
 
 import (
+	"fmt"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -20,7 +21,10 @@ type ifReq struct {
 	pad   [0x28 - 0x10 - 2]byte
 }
 
-func createInterface(fd uintptr, ifName string, isTAP bool) (createdIFName string, errno error) {
+func createInterface(fd uintptr, ifName string, isTAP bool) (createdIFName string, err error) {
+	if len(ifName) > 0x10 {
+		return "", fmt.Errorf("interface name '%s' is too long", ifName)
+	}
 	var req ifReq
 	if isTAP {
 		req.Flags = cIFF_TAP | cIFF_NO_PI
@@ -28,19 +32,17 @@ func createInterface(fd uintptr, ifName string, isTAP bool) (createdIFName strin
 		req.Flags = cIFF_TUN | cIFF_NO_PI
 	}
 	copy(req.Name[:], ifName)
-	_, _, err := syscall.Syscall(syscall.SYS_IOCTL, fd, uintptr(syscall.TUNSETIFF), uintptr(unsafe.Pointer(&req)))
-	if err != 0 {
-		return "", err
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, fd, uintptr(syscall.TUNSETIFF), uintptr(unsafe.Pointer(&req)))
+	if errno != 0 {
+		return "", errno
 	}
 	return strings.Trim(string(req.Name[:]), "\x00"), nil
 }
 
 func setPersistent(fd uintptr, persistent bool) error {
-	var val uintptr
+	var val uintptr = 0
 	if persistent {
 		val = 1
-	} else {
-		val = 0
 	}
 	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, fd, uintptr(syscall.TUNSETPERSIST), val)
 	if errno != 0 {
