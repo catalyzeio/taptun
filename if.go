@@ -27,7 +27,7 @@ func NewTAP(ifName string) (*Interface, error) {
 }
 
 // Create a new TUN interface whose name is ifName.
-// If ifName is empty, a default name (tap0, tap1, ... ) will be assigned.
+// If ifName is empty, a default name (tun0, tun1, ... ) will be assigned.
 // ifName should not exceed 16 bytes.
 func NewTUN(ifName string) (*Interface, error) {
 	file, err := os.OpenFile("/dev/net/tun", os.O_RDWR, 0)
