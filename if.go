@@ -41,6 +41,11 @@ func NewTUN(ifName string) (*Interface, error) {
 	return &Interface{isTAP: false, file: file, name: name}, err
 }
 
+// Sets the TUN/TAP device in persistent mode.
+func (ifce *Interface) SetPersistent(persistent bool) error {
+	return setPersistent(ifce.file.Fd(), persistent)
+}
+
 // Returns true if ifce is a TUN interface; otherwise returns false.
 func (ifce *Interface) IsTUN() bool {
 	return !ifce.isTAP

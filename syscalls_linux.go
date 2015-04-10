@@ -30,3 +30,17 @@ func createInterface(fd uintptr, ifName string, flags uint16) (createdIFName str
 	}
 	return strings.Trim(string(req.Name[:]), "\x00"), nil
 }
+
+func setPersistent(fd uintptr, persistent bool) error {
+	var val uintptr
+	if persistent {
+		val = 1
+	} else {
+		val = 0
+	}
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, fd, uintptr(syscall.TUNSETPERSIST), val)
+	if errno != 0 {
+		return errno
+	}
+	return nil
+}
