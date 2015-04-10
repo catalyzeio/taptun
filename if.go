@@ -14,7 +14,7 @@ type Interface struct {
 // Create a new TAP interface whose name is ifName.
 // If ifName is empty, a default name (tap0, tap1, ... ) will be assigned.
 // ifName should not exceed 16 bytes.
-func NewTAP(ifName string) (ifce *Interface, err error) {
+func NewTAP(ifName string) (*Interface, error) {
 	file, err := os.OpenFile("/dev/net/tun", os.O_RDWR, 0)
 	if err != nil {
 		return nil, err
@@ -23,14 +23,13 @@ func NewTAP(ifName string) (ifce *Interface, err error) {
 	if err != nil {
 		return nil, err
 	}
-	ifce = &Interface{isTAP: true, file: file, name: name}
-	return
+	return &Interface{isTAP: true, file: file, name: name}, nil
 }
 
 // Create a new TUN interface whose name is ifName.
 // If ifName is empty, a default name (tap0, tap1, ... ) will be assigned.
 // ifName should not exceed 16 bytes.
-func NewTUN(ifName string) (ifce *Interface, err error) {
+func NewTUN(ifName string) (*Interface, error) {
 	file, err := os.OpenFile("/dev/net/tun", os.O_RDWR, 0)
 	if err != nil {
 		return nil, err
@@ -39,8 +38,7 @@ func NewTUN(ifName string) (ifce *Interface, err error) {
 	if err != nil {
 		return nil, err
 	}
-	ifce = &Interface{isTAP: false, file: file, name: name}
-	return
+	return &Interface{isTAP: false, file: file, name: name}, err
 }
 
 // Returns true if ifce is a TUN interface; otherwise returns false.
@@ -65,12 +63,10 @@ func (ifce *Interface) Close() error {
 
 // Implement io.Writer interface.
 func (ifce *Interface) Write(p []byte) (n int, err error) {
-	n, err = ifce.file.Write(p)
-	return
+	return ifce.file.Write(p)
 }
 
 // Implement io.Reader interface.
 func (ifce *Interface) Read(p []byte) (n int, err error) {
-	n, err = ifce.file.Read(p)
-	return
+	return ifce.file.Read(p)
 }
