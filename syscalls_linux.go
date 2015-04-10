@@ -20,9 +20,13 @@ type ifReq struct {
 	pad   [0x28 - 0x10 - 2]byte
 }
 
-func createInterface(fd uintptr, ifName string, flags uint16) (createdIFName string, errno error) {
+func createInterface(fd uintptr, ifName string, isTAP bool) (createdIFName string, errno error) {
 	var req ifReq
-	req.Flags = flags
+	if isTAP {
+		req.Flags = cIFF_TAP | cIFF_NO_PI
+	} else {
+		req.Flags = cIFF_TUN | cIFF_NO_PI
+	}
 	copy(req.Name[:], ifName)
 	_, _, err := syscall.Syscall(syscall.SYS_IOCTL, fd, uintptr(syscall.TUNSETIFF), uintptr(unsafe.Pointer(&req)))
 	if err != 0 {

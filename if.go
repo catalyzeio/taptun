@@ -19,7 +19,7 @@ func NewTAP(ifName string) (*Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	name, err := createInterface(file.Fd(), ifName, cIFF_TAP|cIFF_NO_PI)
+	name, err := createInterface(file.Fd(), ifName, true)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func NewTUN(ifName string) (*Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	name, err := createInterface(file.Fd(), ifName, cIFF_TUN|cIFF_NO_PI)
+	name, err := createInterface(file.Fd(), ifName, false)
 	if err != nil {
 		return nil, err
 	}
