@@ -57,13 +57,26 @@ type wrapper struct {
 	fd uintptr // atomic uintptr
 }
 
-func wrap(ifce *Interface) *wrapper {
+func wrap(ifce *Interface) (*wrapper, error) {
+	// grab the file descriptor
 	fd := ifce.file.Fd()
-	return &wrapper{fd}
+
+	// validate that the file descriptor can be used in a select call
+	if fd < 0 || fd >= syscall.FD_SETSIZE {
+		return nil, fmt.Errorf("file descriptor cannot be used with select(2)")
+	}
+
+	// set the file descriptor in non-blocking mode
+	if err := syscall.SetNonblock(int(fd), true); err != nil {
+		return nil, err
+	}
+
+	return &wrapper{fd}, nil
 }
 
 func (w *wrapper) Write(p []byte) (n int, err error) {
 	ptr := &w.fd
+	ready := true
 	for {
 		// grab current fd and bail if already stopped
 		current := atomic.LoadUintptr(ptr)
@@ -72,13 +85,26 @@ func (w *wrapper) Write(p []byte) (n int, err error) {
 			return 0, io.EOF
 		}
 
-		// TODO use syscall.Select or epoll
-		return syscall.Write(fd, p)
+		// attempt write if descriptor is ready
+		if ready {
+			n, err := syscall.Write(fd, p)
+			if err != nil || n > 0 {
+				return n, err
+			}
+		}
+
+		// wait for fd to become ready
+		selected, err := waitFD(fd, false)
+		if err != nil {
+			return 0, err
+		}
+		ready = selected
 	}
 }
 
 func (w *wrapper) Read(p []byte) (n int, err error) {
 	ptr := &w.fd
+	ready := true
 	for {
 		// grab current fd and bail if already stopped
 		current := atomic.LoadUintptr(ptr)
@@ -87,8 +113,20 @@ func (w *wrapper) Read(p []byte) (n int, err error) {
 			return 0, io.EOF
 		}
 
-		// TODO use syscall.Select or epoll
-		return syscall.Read(fd, p)
+		// attempt read if descriptor is ready
+		if ready {
+			n, err := syscall.Read(fd, p)
+			if err != nil || n > 0 {
+				return n, err
+			}
+		}
+
+		// wait for fd to become ready
+		selected, err := waitFD(fd, true)
+		if err != nil {
+			return 0, err
+		}
+		ready = selected
 	}
 }
 
@@ -106,8 +144,45 @@ func (w *wrapper) Stop() bool {
 		newFD := -1
 		new := uintptr(newFD)
 		if atomic.CompareAndSwapUintptr(ptr, old, new) {
-			println("set to", newFD)
 			return true
 		}
 	}
+}
+
+/*
+XXX The code below assumes FdSet.Bits entries are 64-bit integer values,
+and there are at least enough entries to cover up through syscall.FD_SETSIZE.
+
+Related issue: https://golang.org/issue/500. In this case, the tap/tun device
+reads and writes are definitely not mapped to select, so we have to emulate
+the related macros (FD_SET, FD_ISSET, etc) directly.
+*/
+
+func waitFD(fd int, read bool) (bool, error) {
+	nfd := fd + 1
+	off := fd >> 6
+	index := uint(fd & 0x3F)
+
+	set := syscall.FdSet{}
+	eset := syscall.FdSet{}
+	set.Bits[off] |= 1 << index
+	eset.Bits[off] |= 1 << index
+
+	tv := syscall.Timeval{Sec: 1}
+
+	var n int
+	var err error
+	if read {
+		n, err = syscall.Select(nfd, &set, nil, &eset, &tv)
+	} else {
+		n, err = syscall.Select(nfd, nil, &set, &eset, &tv)
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	// We're only waiting on one file descriptor, so there is no need to check
+	// which file descriptor is ready.
+	return n > 0, nil
 }

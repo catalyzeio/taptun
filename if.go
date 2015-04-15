@@ -91,6 +91,6 @@ type Accessor interface {
 }
 
 // Wraps this Interface with a thread-safe Accessor.
-func (ifce *Interface) Accessor() Accessor {
+func (ifce *Interface) Accessor() (Accessor, error) {
 	return wrap(ifce)
 }
