@@ -4,7 +4,9 @@ package taptun
 
 import (
 	"fmt"
+	"io"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"unsafe"
 )
@@ -49,4 +51,63 @@ func setPersistent(fd uintptr, persistent bool) error {
 		return errno
 	}
 	return nil
+}
+
+type wrapper struct {
+	fd uintptr // atomic uintptr
+}
+
+func wrap(ifce *Interface) *wrapper {
+	fd := ifce.file.Fd()
+	return &wrapper{fd}
+}
+
+func (w *wrapper) Write(p []byte) (n int, err error) {
+	ptr := &w.fd
+	for {
+		// grab current fd and bail if already stopped
+		current := atomic.LoadUintptr(ptr)
+		fd := int(current)
+		if fd < 0 {
+			return 0, io.EOF
+		}
+
+		// TODO use syscall.Select or epoll
+		return syscall.Write(fd, p)
+	}
+}
+
+func (w *wrapper) Read(p []byte) (n int, err error) {
+	ptr := &w.fd
+	for {
+		// grab current fd and bail if already stopped
+		current := atomic.LoadUintptr(ptr)
+		fd := int(current)
+		if fd < 0 {
+			return 0, io.EOF
+		}
+
+		// TODO use syscall.Select or epoll
+		return syscall.Read(fd, p)
+	}
+}
+
+func (w *wrapper) Stop() bool {
+	ptr := &w.fd
+	for {
+		// grab current fd and bail if already stopped
+		old := atomic.LoadUintptr(ptr)
+		fd := int(old)
+		if fd < 0 {
+			return false
+		}
+
+		// replace fd with stopped marker
+		newFD := -1
+		new := uintptr(newFD)
+		if atomic.CompareAndSwapUintptr(ptr, old, new) {
+			println("set to", newFD)
+			return true
+		}
+	}
 }
