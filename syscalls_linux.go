@@ -150,19 +150,36 @@ func (w *wrapper) Stop() bool {
 }
 
 /*
-XXX The code below assumes FdSet.Bits entries are 64-bit integer values,
-and there are at least enough entries to cover up through
-syscall.FD_SETSIZE.
-
 Related issue: https://golang.org/issue/500. In this case, the tap/tun
 device reads and writes are definitely not mapped to select, so we have
 to emulate the related macros (FD_SET, FD_ISSET, etc) directly.
 */
 
+const (
+	fdBits = syscall.FD_SETSIZE / len(syscall.FdSet{}.Bits)
+)
+
 func waitFD(fd int, read bool) (bool, error) {
 	nfd := fd + 1
-	off := fd >> 6
-	index := uint(fd & 0x3F)
+
+	var off int
+	var index uint
+	switch fdBits {
+	case 16:
+		off = fd >> 4
+		index = uint(fd & 0x0F)
+	case 32:
+		off = fd >> 5
+		index = uint(fd & 0x1F)
+	case 64:
+		off = fd >> 6
+		index = uint(fd & 0x3F)
+	case 128:
+		off = fd >> 7
+		index = uint(fd & 0x7F)
+	default:
+		return false, fmt.Errorf("unexpected FdSet element size")
+	}
 
 	set := syscall.FdSet{}
 	eset := syscall.FdSet{}
