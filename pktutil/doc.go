@@ -1,6 +1,7 @@
 /*
-Package pktutil provides utility functions for interpreting raw MAC frame headers and IP packet headers.
-It defines some constants such as protocol numbers and ethernet frame types.
+Package pktutil provides utility functions for interpreting raw MAC
+frame headers and IP packet headers.  It defines some constants such as
+protocol numbers and ethernet frame types.
 
 Frames/packets are interpreted in following format:
 

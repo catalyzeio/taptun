@@ -151,11 +151,12 @@ func (w *wrapper) Stop() bool {
 
 /*
 XXX The code below assumes FdSet.Bits entries are 64-bit integer values,
-and there are at least enough entries to cover up through syscall.FD_SETSIZE.
+and there are at least enough entries to cover up through
+syscall.FD_SETSIZE.
 
-Related issue: https://golang.org/issue/500. In this case, the tap/tun device
-reads and writes are definitely not mapped to select, so we have to emulate
-the related macros (FD_SET, FD_ISSET, etc) directly.
+Related issue: https://golang.org/issue/500. In this case, the tap/tun
+device reads and writes are definitely not mapped to select, so we have
+to emulate the related macros (FD_SET, FD_ISSET, etc) directly.
 */
 
 func waitFD(fd int, read bool) (bool, error) {
@@ -182,7 +183,7 @@ func waitFD(fd int, read bool) (bool, error) {
 		return false, err
 	}
 
-	// We're only waiting on one file descriptor, so there is no need to check
-	// which file descriptor is ready.
+	// We're only waiting on one file descriptor, so there is no need to
+	// check which file descriptor is ready.
 	return n > 0, nil
 }

@@ -46,17 +46,17 @@ func (ifce *Interface) SetPersistent(persistent bool) error {
 	return setPersistent(ifce.file.Fd(), persistent)
 }
 
-// Returns true if ifce is a TUN interface; otherwise returns false.
+// Returns whether ifce is a TUN interface.
 func (ifce *Interface) IsTUN() bool {
 	return !ifce.isTAP
 }
 
-// Returns true if ifce is a TAP interface; otherwise returns false.
+// Returns whether ifce is a TAP interface.
 func (ifce *Interface) IsTAP() bool {
 	return ifce.isTAP
 }
 
-// Returns the interface name of ifce, e.g. tun0, tap1, etc.
+// Returns the interface name of ifce, e.g., tun0, tap1, etc.
 func (ifce *Interface) Name() string {
 	return ifce.name
 }
@@ -84,9 +84,9 @@ type Accessor interface {
 	// io.Reader interface.
 	Read(p []byte) (n int, err error)
 
-	// Stops any pending reads and writes.
-	// Any subsequent read or write operations on this accessor will return an EOF error.
-	// Does not close the underlying device.
+	// Stops any pending reads and writes. Any subsequent read or write
+	// operations on this accessor will return an EOF error.  Does not
+	// close the underlying device.
 	Stop() bool
 }
 
