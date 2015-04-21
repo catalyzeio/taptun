@@ -88,7 +88,7 @@ func (w *wrapper) Write(p []byte) (n int, err error) {
 		// attempt write if descriptor is ready
 		if ready {
 			n, err := syscall.Write(fd, p)
-			if err != nil || n > 0 {
+			if err != nil && err != syscall.EAGAIN || n > 0 {
 				return n, err
 			}
 		}
@@ -116,7 +116,7 @@ func (w *wrapper) Read(p []byte) (n int, err error) {
 		// attempt read if descriptor is ready
 		if ready {
 			n, err := syscall.Read(fd, p)
-			if err != nil || n > 0 {
+			if err != nil && err != syscall.EAGAIN || n > 0 {
 				return n, err
 			}
 		}
